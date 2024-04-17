@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EditorGroups">
+    <lastGroup>
+      <p k="$PROJECT_DIR$/src/app.d.ts" v="RegexGroup: v1|CURRENT_FOLDER||^(?!.*\.spec\.ts$).*\.(scss|html|ts)$" />
+      <p k="$PROJECT_DIR$/src/app.html" v="RegexGroup: v1|CURRENT_FOLDER||^(?!.*\.spec\.ts$).*\.(scss|html|ts)$" />
+    </lastGroup>
+  </component>
+</project>
