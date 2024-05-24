@@ -50,6 +50,7 @@
       <input type="file" accept=".jpg, .jpeg, .png" on:change={(e)=>onFileSelected(e)}>
     </Cell>
   </LayoutGrid>
+  <button type="submit">Add Monster</button>
 </form>
 
 <style lang="sass">
@@ -68,6 +69,7 @@
   import LayoutGrid, {Cell, InnerGrid} from '@smui/layout-grid';
   import Chip, {Set, Text} from '@smui/chips';
   import AttributSlider from "./AttributSlider.svelte";
+  import {onMount} from "svelte";
 
   let elements = ['Erde', 'Feuer', 'Holz', 'Metall', 'Wasser']
   let tagChoicesDynamic = {
@@ -79,17 +81,30 @@
   };
   let tagChoicesStatic = ['Rot', 'Blau', 'Grün', 'Gelb', 'Weiß', 'Schwarz', 'Pink', 'Lila', 'Braun', 'Orange', 'Groß', 'Klein', 'Mittel', 'Süß',
     'Kräftig', 'Cool', 'Mystisch'];
-  let attr = ['0', '1', '2', '3', '4', '5', '6', '7']
-
   let avatar: any;
   let monsterName: string = '';
-  let monsterTyp: string = 'Erde';
+  let monsterTyp: 'Erde'|'Holz'|'Metall'|'Feuer'|'Wasser' = 'Erde';
   let attribute: { hp: number, atk: number, mag: number, def: number, speed: number } = {hp: 0, atk: 0, mag: 0, def: 0, speed: 0};
   let tags: string[] = [];
   let talentName: string = '';
   let talentBeschreibung: string = '';
-  function handleSubmit() {
 
+  onMount(() => {
+    fetch("http://localhost:8080/monster")
+            .then(response => response.json())
+            .then(data => console.log(data))
+  })
+
+  function handleSubmit() {
+    fetch("http://localhost:8080/addMonster", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({name: monsterName, typ: monsterTyp, level: stufe(), hp: attribute.hp, atk: attribute.atk,
+        mag: attribute.mag, def: attribute.def, speed: attribute.speed, tags,
+        talent: {name: talentName, beschreibung: talentBeschreibung}})
+    })
   }
 
   $: stufe = () => {
