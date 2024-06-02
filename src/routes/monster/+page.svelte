@@ -90,13 +90,18 @@
   let talentBeschreibung: string = '';
 
   onMount(() => {
-    fetch("http://localhost:8080/monster")
+    fetch("http://localhost:8080/monster", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
             .then(response => response.json())
             .then(data => console.log(data))
   })
 
   function handleSubmit() {
-    fetch("http://localhost:8080/addMonster", {
+    fetch("http://localhost:8080/monster", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
