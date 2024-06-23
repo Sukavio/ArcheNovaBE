@@ -7,5 +7,5 @@
 
 <p>
   {name.toUpperCase()} {value} {#if typeEffect}+2{/if}
-  <Slider bind:value={value} min={0} max={17} step={1}></Slider>
+  <Slider bind:value={value} min={1} max={17} step={1}></Slider>
 </p>

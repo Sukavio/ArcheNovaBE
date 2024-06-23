@@ -1,63 +1,58 @@
-<form on:submit|preventDefault={handleSubmit} class="form">
-  <LayoutGrid>
-    <Cell span={8}>
-      <InnerGrid>
-        <Cell span="{12}">
-          <h1>Monster</h1>
-        </Cell>
-        <Cell span="{6}">
-          <h2>Name</h2>
-          <Textfield
-              type="text"
-              bind:value={monsterName}
-              label="Name"
-              style="width: 100%"/>
-          <h2>Typ</h2>
-          <SegmentedButton segments={elements} let:segment singleSelect bind:selected={monsterTyp}>
-            <!-- Note: the `segment` property is required! -->
-            <Segment {segment}>
-              <Label>{segment}</Label>
-            </Segment>
-          </SegmentedButton>
-          <h2>Stufe</h2> {stufe()} {bezeichnung()}
-        </Cell>
-        <Cell span={6}>
-          <h2>Attribute</h2>
-          <AttributSlider bind:value={attribute.hp} name="HP" typeEffect={monsterTyp === 'Holz'}/>
-          <AttributSlider bind:value={attribute.atk} name="ATK" typeEffect={monsterTyp === 'Feuer'}/>
-          <AttributSlider bind:value={attribute.mag} name="MAG" typeEffect={monsterTyp === 'Wasser'}/>
-          <AttributSlider bind:value={attribute.def} name="DEF" typeEffect={monsterTyp === 'Erde'}/>
-          <AttributSlider bind:value={attribute.speed} name="SPEED" typeEffect={monsterTyp === 'Metall'}/>
-        </Cell>
-        <Cell span="{12}">
-          Tags:
-          <Set chips={[...tagChoicesDynamic[monsterTyp],...tagChoicesStatic]} let:chip filter bind:selected={tags}>
-            <Chip {chip} touch>
-              <Text>{chip}</Text>
-            </Chip>
-          </Set>
-        </Cell>
-        <Cell span={6} style="border: 1px solid white; border-radius: 20px; padding: 0 20px 20px 20px">
-          <h3>Talent Name</h3>
-          <Textfield bind:value={talentName} type="test" style="width: 100%"></Textfield>
-          <h4>Beschreibung</h4>
-          <Textfield textarea bind:value={talentBeschreibung} style="width: 100%"></Textfield>
-        </Cell>
-      </InnerGrid>
-    </Cell>
-    <Cell span={4}>
-      <img class="avatar" src="{avatar}" alt="{monsterName}"/><br/>
-      <input type="file" accept=".jpg, .jpeg, .png" on:change={(e)=>onFileSelected(e)}>
-    </Cell>
-  </LayoutGrid>
-  <button type="submit">Add Monster</button>
-</form>
+<MonsterTabelle></MonsterTabelle>
+
+<LayoutGrid>
+  <Cell span={8}>
+    <InnerGrid>
+      <Cell span="{12}">
+        <h1>Monster</h1>
+      </Cell>
+      <Cell span="{6}">
+        <h2>Name</h2>
+        <Textfield
+            type="text"
+            bind:value={monsterName}
+            label="Name"
+            style="width: 100%"/>
+        <h2>Typ</h2>
+        <SegmentedButton segments={elements} let:segment singleSelect bind:selected={monsterTyp}>
+          <!-- Note: the `segment` property is required! -->
+          <Segment {segment}>
+            <Label>{segment}</Label>
+          </Segment>
+        </SegmentedButton>
+        <h2>Stufe</h2> {stufe()} {bezeichnung()}
+      </Cell>
+      <Cell span={6}>
+        <h2>Attribute</h2>
+        <AttributSlider bind:value={attribute.hp} name="HP" typeEffect={monsterTyp === 'Holz'}/>
+        <AttributSlider bind:value={attribute.ang} name="ATK" typeEffect={monsterTyp === 'Feuer'}/>
+        <AttributSlider bind:value={attribute.mag} name="MAG" typeEffect={monsterTyp === 'Wasser'}/>
+        <AttributSlider bind:value={attribute.def} name="DEF" typeEffect={monsterTyp === 'Erde'}/>
+        <AttributSlider bind:value={attribute.speed} name="SPEED" typeEffect={monsterTyp === 'Metall'}/>
+      </Cell>
+      <Cell span="{12}">
+        Tags:
+        <Set chips={[...tagChoicesDynamic[monsterTyp],...tagChoicesStatic]} let:chip filter bind:selected={tags}>
+          <Chip {chip} touch>
+            <Text>{chip}</Text>
+          </Chip>
+        </Set>
+      </Cell>
+    </InnerGrid>
+  </Cell>
+  <Cell span={4}>
+    <img class="avatar" src="{image}" alt="{monsterName}" style="margin: 0 auto"/>
+    <div style="border: 1px solid white; border-radius: 20px; padding: 0 20px 20px 20px; margin-top: 50px">
+      <h3>Talent Name</h3>
+      <Textfield bind:value={talentName} type="test" style="width: 100%"></Textfield>
+      <h4>Beschreibung</h4>
+      <Textfield textarea bind:value={talentBeschreibung} style="width: 100%"></Textfield>
+    </div>
+  </Cell>
+</LayoutGrid>
+<button type="submit" on:click={() => handleSubmit()}>Add Monster</button>
 
 <style lang="sass">
-  .form
-    display: flex
-    flex-direction: column
-
   .avatar
     max-width: 500px
 </style>
@@ -70,6 +65,9 @@
   import Chip, {Set, Text} from '@smui/chips';
   import AttributSlider from "./AttributSlider.svelte";
   import {onMount} from "svelte";
+  import {createMonster, loadImage, loadMonsters} from "$lib/apis/monsterApi";
+  import MonsterTabelle from "../../components/MonsterTabelle.svelte";
+  import {monsterStore} from "../../stores/Monster.store";
 
   let elements = ['Erde', 'Feuer', 'Holz', 'Metall', 'Wasser']
   let tagChoicesDynamic = {
@@ -81,42 +79,55 @@
   };
   let tagChoicesStatic = ['Rot', 'Blau', 'Grün', 'Gelb', 'Weiß', 'Schwarz', 'Pink', 'Lila', 'Braun', 'Orange', 'Groß', 'Klein', 'Mittel', 'Süß',
     'Kräftig', 'Cool', 'Mystisch'];
-  let avatar: any;
+  let image: any;
   let monsterName: string = '';
-  let monsterTyp: 'Erde'|'Holz'|'Metall'|'Feuer'|'Wasser' = 'Erde';
-  let attribute: { hp: number, atk: number, mag: number, def: number, speed: number } = {hp: 0, atk: 0, mag: 0, def: 0, speed: 0};
+  let monsterTyp: 'Erde' | 'Holz' | 'Metall' | 'Feuer' | 'Wasser' = 'Erde';
+  let attribute: { hp: number, ang: number, mag: number, def: number, speed: number } = {
+    hp: rand(1, 5),
+    ang: rand(1, 5),
+    mag: rand(1, 5),
+    def: rand(1, 5),
+    speed: rand(1, 5)
+  };
   let tags: string[] = [];
   let talentName: string = '';
   let talentBeschreibung: string = '';
 
+  function rand(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
   onMount(() => {
-    fetch("http://localhost:8080/monster", {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-            .then(response => response.json())
-            .then(data => console.log(data))
+    loadMonster()
+    monsterStore.subscribe(monster => {
+      monsterName = monster.name
+      monsterTyp = monster.typ
+      image = monster.image
+      tags = monster.tags
+    });
   })
 
+  function loadMonster() {
+    loadMonsters().then(data => console.log(data));
+    loadImage().then(image => image = image)
+  }
+
   function handleSubmit() {
-    fetch("http://localhost:8080/monster", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({name: monsterName, typ: monsterTyp, level: stufe(), hp: attribute.hp, atk: attribute.atk,
-        mag: attribute.mag, def: attribute.def, speed: attribute.speed, tags,
-        talent: {name: talentName, beschreibung: talentBeschreibung}})
+    createMonster({
+      name: monsterName, typ: monsterTyp, stufe: stufe(), attr: {
+        hp: attribute.hp, ang: attribute.ang,
+        mag: attribute.mag, def: attribute.def, speed: attribute.speed
+      }, tags, image,
+      talent: {name: talentName, beschreibung: talentBeschreibung}
     })
+    .then(loadMonster)
   }
 
   $: stufe = () => {
-    return Math.ceil((attribute.hp + attribute.atk + attribute.mag + attribute.def + attribute.speed - 5) / 6);
+    return Math.ceil((attribute.hp + attribute.ang + attribute.mag + attribute.def + attribute.speed - 5) / 6);
   }
   $: bezeichnung = () => {
-    let attributDiff = (attribute.hp + attribute.atk + attribute.mag + attribute.def + attribute.speed - 5) % 6;
+    let attributDiff = (attribute.hp + attribute.ang + attribute.mag + attribute.def + attribute.speed - 5) % 6;
     switch (attributDiff) {
       case 1:
       case 2:
@@ -130,13 +141,4 @@
         return '';
     }
   }
-
-  const onFileSelected = (e: any) => {
-    let image = e.target.files[0];
-    let reader = new FileReader();
-    reader.readAsDataURL(image);
-    reader.onload = e => {
-      avatar = e.target?.result
-    }
-  };
 </script>
